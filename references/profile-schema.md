@@ -17,9 +17,12 @@ profile:
   skeleton:                                  # 섹션 골격 (순서 있음)
     - { level: 0, marker: "Ⅰ. Ⅱ.", label_example: "개요" }
     - { level: 1, marker: "□",       label_example: "추진배경" }
-    - { level: 2, marker: "ㅇ",      indent_spaces: 1 }
-    - { level: 3, marker: "-",       indent_spaces: 3 }
-    - { level: 4, marker: "*",       indent_spaces: 5 }
+    # 들여쓰기는 원천에 따라 이원화 기록 (docx는 '칸' 저장 안 함):
+    #   indent_source: leading_spaces  → indent_spaces: N (선행 공백 문자 수)
+    #   indent_source: para_indent_pt  → indent_pt: N     (Pt/twips; '칸'으로 환산 금지)
+    - { level: 2, marker: "ㅇ",      indent_source: "leading_spaces", indent_spaces: 1 }
+    - { level: 3, marker: "-",       indent_source: "leading_spaces", indent_spaces: 3 }
+    - { level: 4, marker: "*",       indent_source: "leading_spaces", indent_spaces: 5 }
     - { level: 2, marker: "① ②",    note: "번호 열거 시" }
   required_sections: ["요약(◇)", "붙임"]     # 반드시 존재해야 하는 섹션
   style:
@@ -56,8 +59,23 @@ content:
   attachment: "붙임 본문 또는 표준 문구"
 ```
 
+## 관측 가능성 (파서별 — 특히 .docx/python-docx)
+
+python-docx는 스타일 상속(effective style)을 해석하지 않으므로 필드마다 관측 신뢰도가 다르다. **못 읽은 필드는 `UNOBSERVED`로 남기고, 있는 척하지 않는다.**
+
+| 필드 | .docx(python-docx) 관측성 | 방법 |
+|------|---------------------------|------|
+| 여백·용지 | ✅ 신뢰 | `section.page_width/height`, `*_margin` (EMU) |
+| 글머리 기호·선행공백 | ✅ 가능 | 텍스트 선행 글자 + `lstrip` 공백 수 |
+| 문단 들여쓰기(Pt) | △ 부분 | `paragraph_format.left_indent` (None 흔함; '칸' 환산 금지) |
+| 본문 글꼴·크기 | △ 자주 None | `run.font` → `styles['Normal'].font` → docDefaults(미해석 시 UNOBSERVED) |
+| 줄간격 | △ 자주 None | `paragraph_format.line_spacing` |
+| 표 헤더 음영 | △ XML만 | 셀 `tcPr/w:shd@w:fill` 직접 파싱 |
+
+hwpx(kordoc)는 `extract_profile`로 글꼴·여백·스타일을 폭넓게 관측하고 **원본을 스타일 공여자로 보존**하는 편이 더 잘 된다.
+
 ## 원칙
 
-- 프로파일은 **관측 기반**이다. 샘플에 없는 규칙을 지어내지 않는다(불명확하면 "미관측"으로 두고 일반 관행 폴백을 표시).
+- 프로파일은 **관측 기반**이다. 샘플에 없는 규칙을 지어내지 않는다(불명확하면 `UNOBSERVED`로 두고 일반 관행 폴백을 표시).
 - `preserve_from_sample: true`인 항목(글꼴·여백·표 스타일)은 새로 정의하지 말고 **원본을 스타일 공여자로 보존**한다.
 - 이 스키마는 특정 기관 전용이 아니다. `doc_type`·`skeleton`은 샘플마다 달라진다.
