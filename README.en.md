@@ -6,39 +6,45 @@
 
 [한국어](README.md) · **English**
 
-A [Claude Code](https://claude.com/claude-code) skill that **reproduces *your* document format**: give it a sample and it builds new documents in that exact shape.
-It ships no template. The format is always a **runtime input**, and after generating, the skill checks its own output against the sample line by line and reports where it matched and where it didn't.
+A [Claude Code](https://claude.com/claude-code) skill that makes your documents match an organization's required format.
 
-<!-- demo GIF goes here -->
+**Show it one sample document and it learns the shape of it**, then builds your new content in that same shape. It ships with no built-in templates, so any organization's format works. And once it's finished, it **goes back through what it made and tells you, item by item, whether it really matches.**
 
-## Why no bundled templates
+## What makes it different
 
-There is no shortage of tooling for Korean documents. But most of it solves **"Markdown → hwpx"** — turning *content into a format*, where the format is the one the tool decided on. (HWP/HWPX is the file format of Hangul Word Processor, the de facto standard for Korean institutional paperwork.) What working professionals need more often runs the other way: the target format is already fixed, and it was fixed by **the commissioning body or the department above you**, not by your tool.
+Some background first. Official paperwork in Korea runs on HWP and HWPX files — the formats of a word processor called Hangul, which is the de facto standard for institutional paperwork there, the way `.docx` belongs to Word. Government offices, public agencies and universities each keep their own house format for those files: which sections come in what order, which small symbol marks each level of bullet, how sentences are supposed to end. The format you have to match is theirs, not yours.
 
-Bundling per-institution templates fails twice. **Coverage never arrives** — formats differ across institutions, and differ again by document type *within* an institution. And **they aren't mine to ship**: putting another organization's form files into a public repository is something you simply shouldn't do. So the design goes the other way — **the format is a runtime input, not code** (bring-your-own-template). This repository contains no institutional form assets of any kind, and even the bundled example is a fictional form rather than a real one.
+If that sounds like a local quirk, it isn't. Anyone who has filled in a government procurement form, a grant application or a funder's standard reporting template has met the same problem in a different file format: someone else decided the layout, and matching it exactly is your job.
 
-→ [Why I built this · detailed usage](docs/why.md)
+There is already plenty of tooling for Korean documents. But most of it solves "turn my Markdown into a Hangul file" — pouring content into **the format the tool picked**. What people need more often runs the other way: the format is already fixed, and it was fixed by **the commissioning body or the department above you.**
+
+So why not just bundle every organization's template? Two reasons that can't work. Formats differ between organizations, and differ again by document type *inside* one organization, so a bundled list is always behind. And another organization's form files simply **aren't mine to publish.** So this was built the other way around — **you supply the format at the moment you use it.** Which is why this repository contains no organization's form files of any kind.
+
+→ [Why I built this, and fuller usage notes](docs/why.md)
 
 ## How it works
 
 ```
-[Sample format] ──parse──▶ [Format profile] ──┐
-                                              ├──▶ [New document in that format] ──▶ [Fidelity check]
-[New content] ────organize────────────────────┘
+Your sample + your content → learn the shape → ★you confirm it → build → 🚦check it matches
 ```
 
-There are **two inputs**, and both are required — a **format sample** to follow (`.hwp` / `.hwpx` / `.docx`; `.pdf` for structural reference only) and the **content to place in it** (new copy, notes, or a draft already written in some other format). Ask for "our institution's format" without providing a sample and the skill **asks for one rather than inventing a format.**
+You give it **two things**, and both are required: a **sample to copy** (`.hwp`, `.hwpx` or `.docx`; a `.pdf` works for structure only) and the **content to put in it** (new copy, notes, or a draft you already wrote in some other format). Ask for "our organization's format" without attaching a sample and it **asks you for one rather than inventing a format.**
 
-1. **Profile extraction ★** — section skeleton, per-level bullet markers and indentation, sentence-ending register, title/date/signature conventions and table practice are read out as data, and **the skill stops here for your confirmation.**
-2. **Content mapping** — content is placed into the skeleton and the register rules applied. Missing information is not invented, data is not forced into the sample's tables, and figures and proper nouns are untouched.
-3. **Generation** — output in the profile's format (kordoc for hwpx, python-docx for docx, explicitly re-applying the formatting that was **observed**). The original sample is never overwritten.
-4. **Fidelity check** — the output is compared against the sample profile item by item and reported as a table ([full worked run](examples/example-walkthrough.md)).
+**Step 1 — it reads the shape out of your sample. ★** What order the sections come in, which symbol marks each level of bullet (□, then ㅇ, then -, and so on), how sentences end, how the title, date and signature block are laid out, how tables are used. **Then it stops and shows you what it found.**
 
-## The fidelity check
+**Step 2 — it fits your content into that shape.** Your material goes into the section order and takes on the sample's sentence style. It doesn't invent information it wasn't given, doesn't force your data into the sample's tables, and doesn't touch your figures or proper nouns.
 
-Output that's been shaped to a format generally *looks* right. The problem is that **looking right and being right are different things** — three items left in the wrong sentence register, a sub-item indented two spaces instead of three, a mandatory "Attachments" section missing entirely: none of that jumps out at the eye. **That comparison, more than the generation, is what this skill is for.**
+**Step 3 — it builds the document**, re-applying the formatting it actually read out of the sample. Your original sample file is never overwritten.
 
-✅ matches the sample · ⚠️ a partial match, or **a decision the skill deliberately left to you** (an ambiguous register conversion, a placeholder where information wasn't available, a table-column conflict) — **this is the column a human needs to read**, and answering applies it directly · 🔴 missing or in violation. If even one line is 🔴, the skill does not report the document as format-compliant.
+**Step 4 — it compares the result against the sample** and reports back as a table.
+
+## Then it checks its own work
+
+A document that's been shaped to a format generally *looks* right. The trouble is that **looking right and being right are two different things.** Three items left in the wrong sentence style, a sub-item indented one space off, a required "Attachments" section missing entirely — none of that catches the eye. **That comparison, more than the building, is what this skill is for.**
+
+- **✅ matches the sample.**
+- **⚠️ a partial match, or a decision it deliberately left to you** — an item whose style conversion was ambiguous, a blank left where information wasn't available, a table whose columns don't line up. **This is the part a person needs to read**, and telling it what you want applies your answer directly.
+- **🔴 missing, or in violation.** If even one line is 🔴, it does not report the document as matching the format.
 
 ## Install
 
@@ -48,37 +54,39 @@ cd ~/.claude/skills
 git clone https://github.com/parkjui92/form-tailor.git
 ```
 
-Restart Claude Code and it will pick up relevant requests automatically. The skill's trigger description is written in Korean, so Korean phrasing invokes it most reliably — you can always name the skill directly instead. Its output follows your sample.
+Restart Claude Code and it will pick up relevant requests on its own. Its trigger description is written in Korean, so Korean phrasing invokes it most reliably — otherwise just name the skill directly. The output follows your sample, whatever language that's in.
 
-## Usage
+## Using it
+
+Just ask in plain language.
 
 ```
 Format this week's items exactly like the attached weekly report   ← reuse last time's shape
-Lay this draft out according to the attached form template         ← fill an empty form
-Rebuild this Markdown draft in the attached institutional format   ← port a draft over
-Sub-items are indented two spaces, not three                       ← ★at the profile check
-Convert the 3 items still in declarative form                      ← when the check returns ⚠️
+Lay this draft out according to the attached blank form            ← fill in a form you were sent
+Rebuild this Markdown draft in the attached organization's format  ← move a draft across
+Sub-items are indented two spaces, not three                       ← ★when it shows you the shape
+Fix the 3 items still in the wrong sentence style                  ← when the check comes back ⚠️
 ```
 
-It stops once, at the profile check. Proceeding on a misread profile means rebuilding the whole document; fixing one line there is far cheaper.
+It stops once, right after it reads the shape. Building a whole document on a misread shape and undoing it later costs far more than **fixing one line at that point.**
 
-## Scope & limits
+## Good to know
 
-- `.hwp`/`.hwpx` parsing, form-field filling and structural comparison need the [kordoc](https://github.com/chrisryugj/kordoc) MCP server. Without it the skill falls back to python-docx / LibreOffice, but **hwpx format preservation is limited**
-- **It neither produces content nor invents formats.** Research and writing are not this skill's job, and figures and claims aren't changed — only the format is transplanted. Real names and contact details in the sample's signature block are not carried over either; the checklist notes it
-- **It doesn't guarantee compliance with any institution's regulations.** It reproduces the formatting **observed** in the sample you provided
-- **A table full of ✅ does not mean every aspect of the format is perfect.** python-docx doesn't resolve style inheritance, so body font and line spacing frequently come back `UNOBSERVED`, and formatting that was never observed can't be checked either. `.pdf` samples are structural reference only
-- The verification record published in this repo is a single adversarial smoke test that completed all four phases against a synthetic form ([CHANGELOG.md](CHANGELOG.md))
-- Details: [SKILL.md](SKILL.md) · [profile schema](references/profile-schema.md) · [Korean form conventions](references/korean-form-conventions.md) · [fidelity checklist](references/fidelity-checklist.md)
+- Reading and writing `.hwp` / `.hwpx` files needs a separate tool for handling Hangul files, called [kordoc](https://github.com/chrisryugj/kordoc). Without it the skill falls back to the Word-file tooling, but **keeping Hangul formatting intact is limited that way.**
+- **It doesn't write your content, and it doesn't invent formats.** Research and writing aren't its job, and it won't change your figures or claims — it moves the format across, nothing else. Real names and contact details in the sample's signature block aren't copied over either; it flags them instead.
+- **It can't promise you've complied with any organization's rules.** It reproduces the formatting it **actually observed** in the sample you gave it.
+- **A table full of ✅ doesn't mean the formatting is perfect.** With `.docx` samples, body font and line spacing often can't be read at all, and **formatting that was never read can't be checked either.** `.pdf` samples are for structure only.
+- The published verification record is a single run that took all four steps to the end against a made-up form ([CHANGELOG.md](CHANGELOG.md)).
+- More detail: [SKILL.md](SKILL.md) · [what goes into the shape it reads](references/profile-schema.md) · [Korean official-document style conventions](references/korean-form-conventions.md) · [what gets checked](references/fidelity-checklist.md)
 
-## Series
+## Related work
 
-**Agent-team kits** — [policy-research-kit](https://github.com/parkjui92/policy-research-kit) (policy research reports) · [rnd-proposal-kit](https://github.com/parkjui92/rnd-proposal-kit) (Korean government R&D proposals) · [socsci-paper-kit](https://github.com/parkjui92/socsci-paper-kit) (social science papers)
+**Plugins that write reports and proposals** — [policy-research-kit](https://github.com/parkjui92/policy-research-kit) (policy research reports) · [rnd-proposal-kit](https://github.com/parkjui92/rnd-proposal-kit) (Korean government R&D proposals) · [socsci-paper-kit](https://github.com/parkjui92/socsci-paper-kit) (social science papers)
 
-**Authoring kit** — [lecture-deck-kit](https://github.com/parkjui92/lecture-deck-kit) (HTML lecture decks with in-browser live editing)
+**Plugins that build and edit** — [lecture-deck-kit](https://github.com/parkjui92/lecture-deck-kit) (HTML lecture slides you edit right in the browser)
 
-**Standalone skills** — **form-tailor** (this repo — institutional document formats) · [fact-verify](https://github.com/parkjui92/fact-verify) (source verification) · [paper-proofread](https://github.com/parkjui92/paper-proofread) (Korean academic proofreading) · [report-to-brief](https://github.com/parkjui92/report-to-brief) (report compression)
+**Single-purpose tools** — [fact-verify](https://github.com/parkjui92/fact-verify) (check whether sources are real) · [paper-proofread](https://github.com/parkjui92/paper-proofread) (Korean academic proofreading) · **form-tailor** (this repository) · [report-to-brief](https://github.com/parkjui92/report-to-brief) (shorten long reports)
 
 ## License
 
-[MIT](LICENSE). No proprietary institutional forms or template files are included (bring-your-own-template principle).
+[MIT](LICENSE). No organization's forms or template files are included.
