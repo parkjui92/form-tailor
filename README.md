@@ -41,7 +41,7 @@
 ```bash
 mkdir -p ~/.claude/skills
 cd ~/.claude/skills
-git clone https://github.com/parkjui92-tech/form-tailor.git
+git clone https://github.com/parkjui92/form-tailor.git
 ```
 
 ### 권장 의존성
@@ -67,8 +67,8 @@ Claude Code에서 샘플 파일과 내용을 주고 요청하면 트리거됩니
 ## 연구자용 스킬 시리즈
 
 - **form-tailor** (이 저장소) — 기관 양식 맞춤 제작
-- **[paper-proofread](https://github.com/parkjui92-tech/paper-proofread)** — 한국어 학술 원고 교정교열
-- **[fact-verify](https://github.com/parkjui92-tech/fact-verify)** — 출처 신뢰도 검증 (한국 학술·정책 문헌 포함)
+- **[paper-proofread](https://github.com/parkjui92/paper-proofread)** — 한국어 학술 원고 교정교열
+- **[fact-verify](https://github.com/parkjui92/fact-verify)** — 출처 신뢰도 검증 (한국 학술·정책 문헌 포함)
 
 ## 라이선스
 
