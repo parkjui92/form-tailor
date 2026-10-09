@@ -81,7 +81,7 @@ It stops once, right after it reads the shape. Building a whole document on a mi
 
 ## Related work
 
-**Plugins that write reports and proposals** — [policy-research-kit](https://github.com/parkjui92/policy-research-kit) (policy research reports) · [rnd-proposal-kit](https://github.com/parkjui92/rnd-proposal-kit) (Korean government R&D proposals) · [socsci-paper-kit](https://github.com/parkjui92/socsci-paper-kit) (social science papers)
+**Plugins that write reports and proposals** — [policy-research-kit](https://github.com/parkjui92/policy-research-kit) (policy research reports) · rnd-proposal-kit (Korean government R&D proposals, private) · [socsci-paper-kit](https://github.com/parkjui92/socsci-paper-kit) (social science papers)
 
 **Plugins that build and edit** — [lecture-deck-kit](https://github.com/parkjui92/lecture-deck-kit) (HTML lecture slides you edit right in the browser)
 
